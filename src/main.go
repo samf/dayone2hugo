@@ -1,7 +1,6 @@
 package main
 
 import (
-	"archive/zip"
 	"fmt"
 	"os"
 
@@ -20,31 +19,13 @@ type CLI struct {
 func (cli *CLI) Run(ctx *Context) error {
 	defer cli.Input.Close()
 
-	fi, err := cli.Input.Stat()
+	doz, err := NewDOZip(cli.Input)
 	if err != nil {
-		err = fmt.Errorf("cannot stat input file: %w", err)
 		return err
 	}
 
-	zippy, err := zip.NewReader(cli.Input, fi.Size())
+	journal, err := doz.getJournal()
 	if err != nil {
-		err = fmt.Errorf("cannot open zip reader: %w", err)
-		return err
-	}
-
-	dir := map[string]*zip.File{}
-	for _, f := range zippy.File {
-		dir[f.Name] = f
-	}
-
-	jname := "Journal.json"
-	journalFile := dir[jname]
-	if journalFile == nil {
-		return fmt.Errorf("no %v file found", jname)
-	}
-	journal, err := parseDOJson(journalFile)
-	if err != nil {
-		err = fmt.Errorf("cannot parse %v: %w", jname, err)
 		return err
 	}
 
