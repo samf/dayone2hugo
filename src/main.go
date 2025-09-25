@@ -15,9 +15,10 @@ type CLI struct {
 
 	Input *os.File `help:"zip file to be converted" arg:""`
 
-	OutDir   string `help:"directory for output files; will create if necessary" short:"d" type:"path" default:"."`
-	Entry    int    `help:"which entry to export" default:"0"`
-	FileName string `help:"file name of the markdown file we will produce" default:"index.md"`
+	OutDir     string   `help:"directory for output files; will create if necessary" short:"d" type:"path" default:"."`
+	Entry      int      `help:"which entry to export" default:"0"`
+	FileName   string   `help:"file name of the markdown file we will produce" default:"index.md"`
+	PhotoNames []string `help:"friendly names for photos"`
 }
 
 func (cli *CLI) Run(ctx *Context) error {
@@ -39,6 +40,7 @@ func (cli *CLI) Run(ctx *Context) error {
 	}
 
 	photoWallet := NewPhotoWallet(entry)
+	err = photoWallet.setFriendlyNames(cli.PhotoNames)
 
 	body := NewBody(entry)
 	body.fixImages(photoWallet)
