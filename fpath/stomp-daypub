@@ -2,7 +2,8 @@
 
 local current="$(whence daypub)"
 local src="${functions_source[$0]:h}/../src"
+local goback=$PWD
 
-pushd $src >/dev/null
+cd $src
 go build && mv -i daypub $current
-popd
+cd $goback
