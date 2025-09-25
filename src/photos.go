@@ -35,16 +35,16 @@ func NewPhotoWallet(j *Entry) *PhotoWallet {
 }
 
 func (pw *PhotoWallet) fixPhotoSrc(given string) string {
-	p := pw.wallet[(given)]
+	p := pw.wallet[given]
 	if p == nil {
 		log.Printf("warning: no photo found for %q", (given))
 		return given
 	}
 
-	return p.fixPhotoSrc(given)
+	return p.getFName()
 }
 
-func (p *Photo) fixPhotoSrc(bgiven string) string {
+func (p *Photo) getFName() string {
 	res := p.MD5
 
 	res += "." + p.Type

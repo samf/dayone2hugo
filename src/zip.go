@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"fmt"
 	"os"
+	"strings"
 )
 
 const (
@@ -53,4 +54,16 @@ func (doz *DOZip) getJournal() (*Journal, error) {
 	}
 
 	return journal, nil
+}
+
+func (doz *DOZip) findPhotoFile(name string) (*zip.File, error) {
+	for n, f := range doz.dir {
+		if strings.Contains(n, name) {
+			return f, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not find zip component containing %q",
+		name,
+	)
 }
