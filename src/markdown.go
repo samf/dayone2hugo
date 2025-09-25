@@ -1,11 +1,13 @@
 package main
 
 import (
+	"io"
 	"log"
 	"net/url"
 
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/md"
 	"github.com/gomarkdown/markdown/parser"
 )
 
@@ -13,7 +15,7 @@ type Body struct {
 	ast ast.Node
 }
 
-func NewMD(input string) *Body {
+func NewBody(input string) *Body {
 	extensions := +parser.CommonExtensions
 	mdParser := parser.NewWithExtensions(extensions)
 
@@ -39,10 +41,6 @@ func (body *Body) fixImages(pw *PhotoWallet) {
 			}
 
 			if durl.Scheme == "dayone-moment" {
-				log.Printf("mapping %q to %q",
-					dest,
-					pw.fixPhotoSrc(durl.Host),
-				)
 				img.Destination = []byte(pw.fixPhotoSrc(durl.Host))
 			}
 		}
@@ -50,4 +48,10 @@ func (body *Body) fixImages(pw *PhotoWallet) {
 	}
 
 	ast.WalkFunc(body.ast, trav)
+}
+
+func (body *Body) render(out io.Writer) {
+	mdRender := md.NewRenderer(md.WithRenderInFooter(true))
+	stuff := markdown.Render(body.ast, mdRender)
+	out.Write(stuff)
 }

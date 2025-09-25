@@ -52,8 +52,10 @@ func (cli *CLI) Run(ctx *Context) error {
 
 	photoWallet := NewPhotoWallet(journal.Entries[0])
 
-	md := NewMD(journal.Entries[0].Text)
-	md.fixImages(photoWallet)
+	body := NewBody(journal.Entries[0].Text)
+	body.fixImages(photoWallet)
+
+	body.render(os.Stdout)
 
 	return nil
 }
