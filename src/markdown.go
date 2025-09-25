@@ -15,7 +15,8 @@ type Body struct {
 	ast ast.Node
 }
 
-func NewBody(input string) *Body {
+func NewBody(entry *Entry) *Body {
+	input := entry.Text
 	extensions := +parser.CommonExtensions
 	mdParser := parser.NewWithExtensions(extensions)
 
@@ -50,7 +51,7 @@ func (body *Body) fixImages(pw *PhotoWallet) {
 	ast.WalkFunc(body.ast, trav)
 }
 
-func (body *Body) render(out io.Writer) {
+func (body *Body) renderMarkdown(out io.Writer) {
 	mdRender := md.NewRenderer(md.WithRenderInFooter(true))
 	stuff := markdown.Render(body.ast, mdRender)
 	out.Write(stuff)

@@ -3,6 +3,7 @@ package main
 import (
 	"archive/zip"
 	"encoding/json"
+	"fmt"
 )
 
 type Journal struct {
@@ -37,7 +38,7 @@ type Metadata struct {
 	Version string `json:"version"`
 }
 
-func parseDOJson(f *zip.File) (*Journal, error) {
+func NewDOJournal(f *zip.File) (*Journal, error) {
 	zfile, err := f.Open()
 	if err != nil {
 		return nil, err
@@ -52,4 +53,15 @@ func parseDOJson(f *zip.File) (*Journal, error) {
 	}
 
 	return j, nil
+}
+
+func (j *Journal) getEntry(which int) (*Entry, error) {
+	if which >= len(j.Entries) {
+		return nil, fmt.Errorf("entry %v out of range (max is %v)",
+			which,
+			len(j.Entries)-1,
+		)
+	}
+
+	return j.Entries[which], nil
 }

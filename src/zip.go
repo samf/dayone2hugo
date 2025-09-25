@@ -46,7 +46,7 @@ func (doz *DOZip) getJournal() (*Journal, error) {
 		return nil, fmt.Errorf("no %v file found", journalName)
 	}
 
-	journal, err := parseDOJson(jfile)
+	journal, err := NewDOJournal(jfile)
 	if err != nil {
 		err = fmt.Errorf("cannot parse %v: %w", journalName, err)
 		return nil, err
