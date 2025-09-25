@@ -3,11 +3,9 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"github.com/alecthomas/kong"
-	"github.com/davecgh/go-spew/spew"
 )
 
 type Context struct{}
@@ -35,8 +33,6 @@ func (cli *CLI) Run(ctx *Context) error {
 		return err
 	}
 
-	fmt.Println(spew.Sdump(journal))
-
 	entry, err := journal.getEntry(cli.Entry)
 	if err != nil {
 		return err
@@ -46,8 +42,6 @@ func (cli *CLI) Run(ctx *Context) error {
 
 	body := NewBody(entry)
 	body.fixImages(photoWallet)
-
-	log.Printf("outdir: %q", cli.OutDir)
 
 	err = cli.GotoOutDir()
 	if err != nil {
