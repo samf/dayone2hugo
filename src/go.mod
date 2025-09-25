@@ -1,4 +1,4 @@
-module github.com/samf/dayone2hugo
+module github.com/samf/daypub
 
 go 1.25.1
 

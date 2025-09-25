@@ -1,1 +1,1 @@
-# dayone2hugo
+# daypub: helping you make some of your Day One entries public
