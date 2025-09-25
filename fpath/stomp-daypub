@@ -1,0 +1,8 @@
+#! /usr/bin/zsh
+
+local current="$(whence daypub)"
+local src="${functions_source[$0]:h}/../src"
+
+pushd $src >/dev/null
+go build && mv -i daypub $current
+popd
