@@ -43,7 +43,7 @@ func (hc *HugoCmd) Run(ctx *Context) error {
 
 	var renderer markdown.Renderer
 	if hc.UseFigure {
-		renderer = NewHugoRenderer()
+		renderer = hc.NewHugoRenderer()
 	}
 
 	err = hc.outBody(body, frontMatter.output(), renderer)
@@ -87,11 +87,13 @@ func (fm *FrontMatter) output() []byte {
 
 type HugoRenderer struct {
 	markdownRenderer markdown.Renderer
+	imgTag           string
 }
 
-func NewHugoRenderer() markdown.Renderer {
+func (hc *HugoCmd) NewHugoRenderer() markdown.Renderer {
 	return &HugoRenderer{
 		markdownRenderer: md.NewRenderer(md.WithRenderInFooter(true)),
+		imgTag:           hc.FigureTag,
 	}
 }
 
@@ -101,7 +103,11 @@ const figureFmt = `
 >}}
 `
 
-func (hr *HugoRenderer) RenderNode(w io.Writer, node ast.Node, entering bool) ast.WalkStatus {
+func (hr *HugoRenderer) RenderNode(
+	w io.Writer,
+	node ast.Node,
+	entering bool,
+) ast.WalkStatus {
 	newNode := node
 	switch node := node.(type) {
 	case *ast.Image:
@@ -115,7 +121,7 @@ func (hr *HugoRenderer) RenderNode(w io.Writer, node ast.Node, entering bool) as
 		}
 		var content string
 		if !entering {
-			content = fmt.Sprintf(figureFmt, "figure", node.Destination)
+			content = fmt.Sprintf(figureFmt, hr.imgTag, node.Destination)
 		}
 		newNode.AsLeaf().Literal = []byte(content)
 	}
