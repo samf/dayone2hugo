@@ -91,8 +91,13 @@ func (body *Body) fixImages(pw *PhotoWallet) {
 	ast.WalkFunc(body.ast, trav)
 }
 
-func (body *Body) renderMarkdown(out io.Writer) {
-	mdRender := md.NewRenderer(md.WithRenderInFooter(true))
+func (body *Body) renderMarkdown(
+	out io.Writer,
+	mdRender markdown.Renderer,
+) {
+	if mdRender == nil {
+		mdRender = md.NewRenderer(md.WithRenderInFooter(true))
+	}
 	stuff := markdown.Render(body.ast, mdRender)
 	out.Write(stuff)
 }

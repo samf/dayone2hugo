@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/alecthomas/kong"
+	"github.com/gomarkdown/markdown"
 )
 
 type Context struct{}
@@ -75,7 +76,7 @@ func (mdc *MarkdownCmd) Run(ctx *Context) error {
 		return err
 	}
 
-	err = mdc.outBody(body, nil)
+	err = mdc.outBody(body, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -109,7 +110,11 @@ func (cli *CommonConvert) GotoOutDir() error {
 	return nil
 }
 
-func (cli *CommonConvert) outBody(body *Body, frontMatter []byte) error {
+func (cli *CommonConvert) outBody(
+	body *Body,
+	frontMatter []byte,
+	renderer markdown.Renderer,
+) error {
 	file, err := os.OpenFile(
 		cli.FileName,
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
@@ -129,7 +134,7 @@ func (cli *CommonConvert) outBody(body *Body, frontMatter []byte) error {
 		}
 	}
 
-	body.renderMarkdown(file)
+	body.renderMarkdown(file, renderer)
 
 	return nil
 }
