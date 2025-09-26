@@ -24,6 +24,7 @@ type HugoCmd struct {
 	KeepTitle bool   `help:"keep the '# title' in your markdown"`
 	UseFigure bool   `help:"use a <figure> shortcode for images" env:"HUGO_FIGURE"`
 	FigureTag string `help:"shortcode to use for figure" default:"figure" env:"HUGO_FIGURE_TAG"`
+	LinkToSrc bool   `help:"in a <figure> shortcode, add a link the same as the src" env:"HUGO_LINK_TO_SRC"`
 }
 
 func (hc *HugoCmd) Run(ctx *Context) error {
@@ -88,20 +89,30 @@ func (fm *FrontMatter) output() []byte {
 type HugoRenderer struct {
 	markdownRenderer markdown.Renderer
 	imgTag           string
+	linkToSrc        bool
 }
 
 func (hc *HugoCmd) NewHugoRenderer() markdown.Renderer {
 	return &HugoRenderer{
 		markdownRenderer: md.NewRenderer(md.WithRenderInFooter(true)),
 		imgTag:           hc.FigureTag,
+		linkToSrc:        hc.LinkToSrc,
 	}
 }
 
-const figureFmt = `
+const (
+	figureFmt = `
 {{< %s
   src=%q
 >}}
 `
+	figureFmtLink = `
+{{< %s
+  src=%q
+  link=%q
+>}}
+`
+)
 
 func (hr *HugoRenderer) RenderNode(
 	w io.Writer,
@@ -121,7 +132,21 @@ func (hr *HugoRenderer) RenderNode(
 		}
 		var content string
 		if !entering {
-			content = fmt.Sprintf(figureFmt, hr.imgTag, node.Destination)
+			switch hr.linkToSrc {
+			case true:
+				content = fmt.Sprintf(
+					figureFmtLink,
+					hr.imgTag,
+					node.Destination,
+					node.Destination,
+				)
+			default:
+				content = fmt.Sprintf(
+					figureFmt,
+					hr.imgTag,
+					node.Destination,
+				)
+			}
 		}
 		newNode.AsLeaf().Literal = []byte(content)
 	}
