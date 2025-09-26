@@ -21,11 +21,40 @@ func NewBody(entry *Entry) *Body {
 	mdParser := parser.NewWithExtensions(extensions)
 
 	ast := markdown.Parse([]byte(input), mdParser)
-	md := &Body{
+	body := &Body{
 		ast: ast,
 	}
 
-	return md
+	body.findTitle()
+
+	return body
+}
+
+func (body *Body) findTitle() string {
+	var title string
+
+	trav := func(node ast.Node, entering bool) ast.WalkStatus {
+		if !entering {
+			return ast.GoToNext
+		}
+
+		if title != "" {
+			return ast.GoToNext
+		}
+
+		if head, ok := node.(*ast.Heading); ok {
+			if head.Level == 1 {
+				child := head.AsContainer().Children[0]
+				title = string(child.AsLeaf().Literal)
+			}
+		}
+
+		return ast.GoToNext
+	}
+
+	ast.WalkFunc(body.ast, trav)
+
+	return title
 }
 
 func (body *Body) fixImages(pw *PhotoWallet) {

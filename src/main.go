@@ -72,7 +72,7 @@ func (mdc *MarkdownCmd) Run(ctx *Context) error {
 		return err
 	}
 
-	err = mdc.outBody(body)
+	err = mdc.outBody(body, nil)
 	if err != nil {
 		return err
 	}
@@ -106,7 +106,7 @@ func (cli *CommonConvert) GotoOutDir() error {
 	return nil
 }
 
-func (cli *CommonConvert) outBody(body *Body) error {
+func (cli *CommonConvert) outBody(body *Body, frontMatter []byte) error {
 	file, err := os.OpenFile(
 		cli.FileName,
 		os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
@@ -117,6 +117,14 @@ func (cli *CommonConvert) outBody(body *Body) error {
 		return err
 	}
 	defer file.Close()
+
+	if frontMatter != nil {
+		_, err = file.Write(frontMatter)
+		if err != nil {
+			err = fmt.Errorf("error writing front matter: %w", err)
+			return err
+		}
+	}
 
 	body.renderMarkdown(file)
 
