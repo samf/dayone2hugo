@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/gomarkdown/markdown"
@@ -122,6 +123,10 @@ func (hr *HugoRenderer) RenderNode(
 	newNode := node
 	switch node := node.(type) {
 	case *ast.Image:
+		if entering {
+			return ast.GoToNext
+		}
+
 		newNode = &ast.HTMLBlock{
 			Leaf: ast.Leaf{
 				Parent:    node.Parent,
@@ -131,22 +136,20 @@ func (hr *HugoRenderer) RenderNode(
 			},
 		}
 		var content string
-		if !entering {
-			switch hr.linkToSrc {
-			case true:
-				content = fmt.Sprintf(
-					figureFmtLink,
-					hr.imgTag,
-					node.Destination,
-					node.Destination,
-				)
-			default:
-				content = fmt.Sprintf(
-					figureFmt,
-					hr.imgTag,
-					node.Destination,
-				)
-			}
+		switch hr.linkToSrc {
+		case true:
+			content = fmt.Sprintf(
+				strings.TrimSpace(figureFmtLink),
+				hr.imgTag,
+				node.Destination,
+				node.Destination,
+			)
+		default:
+			content = fmt.Sprintf(
+				strings.TrimSpace(figureFmt),
+				hr.imgTag,
+				node.Destination,
+			)
 		}
 		newNode.AsLeaf().Literal = []byte(content)
 	}
