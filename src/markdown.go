@@ -25,13 +25,16 @@ func NewBody(entry *Entry) *Body {
 		ast: ast,
 	}
 
-	body.findTitle()
+	body.findTitle(false)
 
 	return body
 }
 
-func (body *Body) findTitle() string {
-	var title string
+func (body *Body) findTitle(deleteTitle bool) string {
+	var (
+		title     string
+		titleNode ast.Node
+	)
 
 	trav := func(node ast.Node, entering bool) ast.WalkStatus {
 		if !entering {
@@ -44,8 +47,12 @@ func (body *Body) findTitle() string {
 
 		if head, ok := node.(*ast.Heading); ok {
 			if head.Level == 1 {
-				child := head.AsContainer().Children[0]
-				title = string(child.AsLeaf().Literal)
+				cont := head.AsContainer()
+				if len(cont.Children) >= 1 {
+					titleNode = node
+					child := cont.Children[0]
+					title = string(child.AsLeaf().Literal)
+				}
 			}
 		}
 
@@ -53,6 +60,10 @@ func (body *Body) findTitle() string {
 	}
 
 	ast.WalkFunc(body.ast, trav)
+
+	if deleteTitle && titleNode != nil {
+		ast.RemoveFromTree(titleNode)
+	}
 
 	return title
 }

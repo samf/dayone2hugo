@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"fmt"
+	"log"
 
 	"github.com/BurntSushi/toml"
 )
@@ -15,6 +15,8 @@ type FrontMatter struct {
 
 type HugoCmd struct {
 	CommonConvert
+
+	KeepTitle bool `help:"keep the '# title' in your markdown"`
 }
 
 func (hc *HugoCmd) Run(ctx *Context) error {
@@ -26,17 +28,13 @@ func (hc *HugoCmd) Run(ctx *Context) error {
 	}
 
 	frontMatter := hc.NewFrontMatter(entry, body)
-	front, err := frontMatter.output()
-	if err != nil {
-		return err
-	}
 
 	err = hc.GotoOutDir()
 	if err != nil {
 		return err
 	}
 
-	err = hc.outBody(body, front)
+	err = hc.outBody(body, frontMatter.output())
 
 	err = hc.outPhotos(doz, entry)
 	if err != nil {
@@ -50,25 +48,27 @@ func (hc *HugoCmd) NewFrontMatter(
 	entry *Entry,
 	body *Body,
 ) *FrontMatter {
+	title := body.findTitle(!hc.KeepTitle)
+
 	front := &FrontMatter{
 		Date:  entry.CreationDate,
 		Tags:  entry.Tags,
-		Title: body.findTitle(),
+		Title: title,
 	}
 
 	return front
 }
 
-func (fm *FrontMatter) output() ([]byte, error) {
+func (fm *FrontMatter) output() []byte {
 	var out bytes.Buffer
 	out.Write([]byte("+++\n"))
 	encoder := toml.NewEncoder(&out)
 	err := encoder.Encode(fm)
 	if err != nil {
-		err = fmt.Errorf("cannot encode frontmatter: %w", err)
-		return nil, err
+		log.Printf("cannot encode frontmatter: %w", err)
+		panic(err)
 	}
 	out.Write([]byte("+++\n"))
 
-	return out.Bytes(), nil
+	return out.Bytes()
 }

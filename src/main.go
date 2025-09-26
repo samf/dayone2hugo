@@ -55,6 +55,9 @@ func (mdc *CommonConvert) getStuff(ctx *Context) (
 
 	photoWallet := NewPhotoWallet(entry)
 	err = photoWallet.setFriendlyNames(mdc.PhotoNames)
+	if err != nil {
+		return nil, nil, nil, nil, nil, err
+	}
 
 	body := NewBody(entry)
 	body.fixImages(photoWallet)
