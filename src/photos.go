@@ -4,6 +4,12 @@ import (
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/barasher/go-exiftool"
+)
+
+const (
+	CaptionAbstract = "Caption-Abstract"
 )
 
 type Photo struct {
@@ -22,22 +28,25 @@ type Photo struct {
 	IsSketch          bool    `json:"isSketch"`
 
 	friendlyName string
+	caption      string
 }
 
 type PhotoWallet struct {
-	wallet        map[string]*Photo
+	byID          map[string]*Photo
+	byFName       map[string]*Photo
 	entryPhotos   []*Photo
 	friendlyNames []string
 }
 
 func NewPhotoWallet(j *Entry) *PhotoWallet {
 	res := &PhotoWallet{
-		wallet:      make(map[string]*Photo, len(j.Photos)),
+		byID:        make(map[string]*Photo, len(j.Photos)),
+		byFName:     make(map[string]*Photo, len(j.Photos)),
 		entryPhotos: make([]*Photo, len(j.Photos)),
 	}
 
 	for i, photo := range j.Photos {
-		res.wallet[photo.Identifier] = photo
+		res.byID[photo.Identifier] = photo
 		res.entryPhotos[i] = photo
 	}
 
@@ -49,10 +58,10 @@ func (pw *PhotoWallet) setFriendlyNames(names []string) error {
 		return nil
 	}
 
-	if len(names) != len(pw.wallet) {
+	if len(names) != len(pw.byID) {
 		return fmt.Errorf(
 			"there are %v photos but you have %v names; these must match",
-			len(pw.wallet),
+			len(pw.byID),
 			len(names),
 		)
 	}
@@ -67,13 +76,25 @@ func (pw *PhotoWallet) setFriendlyNames(names []string) error {
 }
 
 func (pw *PhotoWallet) fixPhotoSrc(given string) string {
-	p := pw.wallet[given]
+	p := pw.byID[given]
 	if p == nil {
 		log.Printf("warning: no photo found for %q", (given))
 		return given
 	}
 
-	return p.getFName()
+	fname := p.getFName()
+	pw.byFName[fname] = p
+	return fname
+}
+
+func (pw *PhotoWallet) setCaptions(et *exiftool.Exiftool) error {
+	for _, p := range pw.entryPhotos {
+		err := p.setCaption(et)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (p *Photo) getFName() string {
@@ -87,4 +108,24 @@ func (p *Photo) getFName() string {
 	}
 
 	return res
+}
+
+func (p *Photo) setCaption(et *exiftool.Exiftool) error {
+	fname := p.getFName()
+	md := et.ExtractMetadata(fname)[0]
+	if err := md.Err; err != nil {
+		err = fmt.Errorf("cannot get metadata for %q: %w", fname, md.Err)
+		return err
+	}
+
+	var (
+		captionVal any
+		ok         bool
+	)
+	if captionVal, ok = md.Fields[CaptionAbstract]; !ok {
+		return nil
+	}
+	p.caption, _ = captionVal.(string)
+
+	return nil
 }

@@ -169,6 +169,7 @@ func (cli *CommonConvert) outPhotos(doz *DOZip, entry *Entry) error {
 			return err
 		}
 		defer outfile.Close()
+
 		_, err = io.Copy(outfile, infile)
 		if err != nil {
 			err = fmt.Errorf("problem writing image file %q: %w",

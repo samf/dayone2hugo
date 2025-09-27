@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/barasher/go-exiftool"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
 	"github.com/gomarkdown/markdown/md"
@@ -22,16 +22,17 @@ type FrontMatter struct {
 type HugoCmd struct {
 	CommonConvert
 
-	KeepTitle bool   `help:"keep the '# title' in your markdown"`
-	UseFigure bool   `help:"use a <figure> shortcode for images" env:"HUGO_FIGURE"`
-	FigureTag string `help:"shortcode to use for figure" default:"figure" env:"HUGO_FIGURE_TAG"`
-	LinkToSrc bool   `help:"in a <figure> shortcode, add a link the same as the src" env:"HUGO_LINK_TO_SRC"`
+	KeepTitle   bool   `help:"keep the '# title' in your markdown"`
+	UseFigure   bool   `help:"use a <figure> shortcode for images" env:"HUGO_FIGURE"`
+	FigureTag   string `help:"shortcode to use for figure" default:"figure" env:"HUGO_FIGURE_TAG"`
+	LinkToSrc   bool   `help:"in a <figure> shortcode, add a link the same as the src" env:"HUGO_LINK_TO_SRC"`
+	SetCaptions bool   `help:"in a <figure> shortcode, add a caption from exif data" env:"HUGO_SET_CAPTIONS"`
 }
 
 func (hc *HugoCmd) Run(ctx *Context) error {
 	defer hc.Input.Close()
 
-	doz, _, entry, _, body, err := hc.getStuff(ctx)
+	doz, _, entry, wallet, body, err := hc.getStuff(ctx)
 	if err != nil {
 		return err
 	}
@@ -45,15 +46,29 @@ func (hc *HugoCmd) Run(ctx *Context) error {
 
 	var renderer markdown.Renderer
 	if hc.UseFigure {
-		renderer = hc.NewHugoRenderer()
+		renderer = hc.NewHugoRenderer(wallet)
 	}
-
-	err = hc.outBody(body, frontMatter.output(), renderer)
 
 	err = hc.outPhotos(doz, entry)
 	if err != nil {
 		return err
 	}
+
+	if hc.SetCaptions {
+		et, err := exiftool.NewExiftool()
+		if err != nil {
+			err = fmt.Errorf("cannot launch exiftool: %w", err)
+			return err
+		}
+		defer et.Close()
+
+		err = wallet.setCaptions(et)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = hc.outBody(body, frontMatter.output(), renderer)
 
 	return nil
 }
@@ -91,28 +106,24 @@ type HugoRenderer struct {
 	markdownRenderer markdown.Renderer
 	imgTag           string
 	linkToSrc        bool
+	wallet           *PhotoWallet
+	setCaptions      bool
 }
 
-func (hc *HugoCmd) NewHugoRenderer() markdown.Renderer {
+func (hc *HugoCmd) NewHugoRenderer(wallet *PhotoWallet) markdown.Renderer {
 	return &HugoRenderer{
 		markdownRenderer: md.NewRenderer(md.WithRenderInFooter(true)),
 		imgTag:           hc.FigureTag,
 		linkToSrc:        hc.LinkToSrc,
+		wallet:           wallet,
+		setCaptions:      hc.SetCaptions,
 	}
 }
 
 const (
-	figureFmt = `
-{{< %s
-  src=%q
->}}
-`
-	figureFmtLink = `
-{{< %s
-  src=%q
-  link=%q
->}}
-`
+	figureStart = "{{< %s"
+	figureKV    = "\n    %v=%q"
+	figureEnd   = "\n>}}"
 )
 
 func (hr *HugoRenderer) RenderNode(
@@ -135,22 +146,18 @@ func (hr *HugoRenderer) RenderNode(
 				Attribute: node.Attribute,
 			},
 		}
-		var content string
-		switch hr.linkToSrc {
-		case true:
-			content = fmt.Sprintf(
-				strings.TrimSpace(figureFmtLink),
-				hr.imgTag,
-				node.Destination,
-				node.Destination,
-			)
-		default:
-			content = fmt.Sprintf(
-				strings.TrimSpace(figureFmt),
-				hr.imgTag,
-				node.Destination,
-			)
+		content := fmt.Sprintf(figureStart, hr.imgTag)
+		content += fmt.Sprintf(figureKV, "src", node.Destination)
+		if hr.linkToSrc {
+			content += fmt.Sprintf(figureKV, "link", node.Destination)
 		}
+		if hr.setCaptions {
+			p := hr.wallet.byFName[string(node.Destination)]
+			if p != nil && p.caption != "" {
+				content += fmt.Sprintf(figureKV, "caption", p.caption)
+			}
+		}
+		content += figureEnd
 		newNode.AsLeaf().Literal = []byte(content)
 	}
 
