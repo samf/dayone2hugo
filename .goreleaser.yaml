@@ -1,0 +1,58 @@
+version: 2
+
+before:
+  hooks:
+    - cd src && go mod tidy
+    - cd src && go generate ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    dir: ./src
+    main: .
+    binary: daypub
+
+archives:
+  - name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+brews:
+  - name: daypub
+    repository:
+      owner: samf
+      name: homebrew-samf
+    homepage: https://github.com/samf/daypub
+    description: "A tool for publishing day entries as markdown or Hugo content"
+    license: "MIT"
+    install: |
+      bin.install "daypub"
+    test: |
+      system "#{bin}/daypub", "--help"
