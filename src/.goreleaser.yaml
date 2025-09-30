@@ -51,7 +51,6 @@ brews:
       owner: samf
       name: homebrew-samf
       token: "{{ .Env.GITHUB_TOKEN }}"
-    homepage: https://github.com/samf/daypub
     description: "A tool for publishing day entries as markdown or Hugo content"
     license: "MIT"
     install: |
