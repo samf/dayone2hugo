@@ -16,10 +16,10 @@ Two ways to install:
 
 1. via [Homebrew](https://brew.sh/): `brew install samf/samf/daypub`
 2. via go source:
-  1. `git clone https://github.com/samf/daypub`
-  2. (look at the source if you wish)
-  3. `go build`
-  4. `mv daypub <destination-in-your-$PATH>`
+    1. `git clone https://github.com/samf/daypub`
+    2. (look at the source if you wish)
+    3. `go build`
+    4. `mv daypub <destination-in-your-$PATH>`
 
 ## using
 
