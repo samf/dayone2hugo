@@ -26,9 +26,10 @@ archives:
       {{- else if eq .Arch "386" }}i386
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
-    files:
-      - README.md
-      - LICENSE
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: ["zip"]
 
 checksum:
   name_template: 'checksums.txt'
@@ -45,6 +46,7 @@ changelog:
 
 brews:
   - name: daypub
+    homepage: https://github.com/samf/homebrew-samf
     repository:
       owner: samf
       name: homebrew-samf
