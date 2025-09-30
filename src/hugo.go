@@ -24,7 +24,7 @@ type HugoCmd struct {
 
 	KeepTitle   bool   `help:"keep the '# title' in your markdown"`
 	UseFigure   bool   `help:"use a <figure> shortcode for images" env:"HUGO_FIGURE"`
-	FigureTag   string `help:"shortcode to use for figure" default:"figure" env:"HUGO_FIGURE_TAG"`
+	FigureTag   string `help:"shortcode to use instead of <figure>" default:"figure" env:"HUGO_FIGURE_TAG"`
 	LinkToSrc   bool   `help:"in a <figure> shortcode, add a link the same as the src" env:"HUGO_LINK_TO_SRC"`
 	SetCaptions bool   `help:"in a <figure> shortcode, add a caption from exif data" env:"HUGO_SET_CAPTIONS"`
 }
