@@ -1,4 +1,4 @@
-module github.com/samf/daypub
+module github.com/samf/daypub/src
 
 go 1.25.1
 
