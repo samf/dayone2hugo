@@ -94,7 +94,7 @@ func (fm *FrontMatter) output() []byte {
 	encoder := toml.NewEncoder(&out)
 	err := encoder.Encode(fm)
 	if err != nil {
-		log.Printf("cannot encode frontmatter: %w", err)
+		log.Printf("cannot encode frontmatter: %v", err)
 		panic(err)
 	}
 	out.Write([]byte("+++\n"))

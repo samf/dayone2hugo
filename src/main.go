@@ -9,10 +9,16 @@ import (
 	"github.com/gomarkdown/markdown"
 )
 
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 type Context struct{}
 
 type CLI struct {
-	Verbose bool `help:"be verbose"`
+	Version kong.VersionFlag `help:"print current version and exit"`
 
 	Markdown MarkdownCmd `help:"publish as simple markdown" cmd:""`
 	Hugo     HugoCmd     `help:"publish as hugo content" cmd:""`
@@ -121,7 +127,7 @@ func (cli *CommonConvert) outBody(
 		0666,
 	)
 	if err != nil {
-		err = fmt.Errorf("cannot open %q: %w", err)
+		err = fmt.Errorf("cannot open %q: %w", cli.FileName, err)
 		return err
 	}
 	defer file.Close()
@@ -193,7 +199,11 @@ func (cli *CommonConvert) getDOZip() (*DOZip, error) {
 }
 
 func main() {
-	ctx := kong.Parse(&CLI{})
+	ctx := kong.Parse(&CLI{}, kong.Vars{
+		"version": version,
+		"commit":  commit,
+		"date":    date,
+	})
 	err := ctx.Run(&Context{})
 	ctx.FatalIfErrorf(err)
 }

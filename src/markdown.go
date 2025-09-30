@@ -78,7 +78,7 @@ func (body *Body) fixImages(pw *PhotoWallet) {
 			dest := string(img.Destination)
 			durl, err := url.Parse(dest)
 			if err != nil {
-				log.Printf("bad destination on image %q: %w", dest, err)
+				log.Printf("bad destination on image %q: %v", dest, err)
 			}
 
 			if durl.Scheme == "dayone-moment" {
