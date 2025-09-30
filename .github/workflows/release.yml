@@ -28,6 +28,6 @@ jobs:
           distribution: goreleaser
           version: '~> v2'
           args: release --clean
+          workdir: src
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
