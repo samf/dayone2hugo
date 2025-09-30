@@ -27,7 +27,7 @@ type CLI struct {
 type CommonConvert struct {
 	Input *os.File `help:"zip file to be converted" arg:""`
 
-	OutDir     string   `help:"directory for output files; will create if necessary" short:"d" type:"path" default:"."`
+	OutDir     string   `help:"directory for output files; will create if necessary" arg:"" type:"path"`
 	Entry      int      `help:"which entry to export" default:"0"`
 	FileName   string   `help:"file name of the markdown file we will produce" default:"index.md"`
 	PhotoNames []string `help:"friendly names for photos"`
