@@ -42,7 +42,7 @@ correct file names of any images that are bundled.
 
 This is a superset of the `markdown` method. It adds the "front
 matter" to the front of the `index.md` file, setting the title of
-the entry if possible.
+the entry if possible. It also sets the date and tags.
 
 Optionally, it can use the `<figure>` shortcode instead of the
 markdown image syntax. `<figure>` is especially useful if you intend
