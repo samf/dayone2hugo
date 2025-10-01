@@ -47,3 +47,19 @@ the entry if possible. It also sets the date and tags.
 Optionally, it can use the `<figure>` shortcode instead of the
 markdown image syntax. `<figure>` is especially useful if you intend
 to keep your images in the page bundle along with your `index.md`.
+
+### environment variables
+
+To keep the tedium down, you can use environment variables to override
+defaults. You can even use [direnv](https://direnv.net), so that every time
+you're in the directory where you work on your blog, you can set custom
+defaults. Here is an example of a `.envrc` file used by the author:
+
+    export HUGO_FIGURE=true
+    export HUGO_FIGURE_TAG=fixfigure
+    export HUGO_LINK_TO_SRC=true
+    export HUGO_SET_CAPTIONS=true
+
+Here, `fixfigure` is a custom shortcode that is roughly a copied
+and modified version of `figure`, available only in a certain hugo
+theme.
