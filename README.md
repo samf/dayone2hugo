@@ -25,6 +25,14 @@ Two ways to install:
 
 Use `daypub --help` for help at any time.
 
+In Day One, export your entry as JSON. This will produce a zip file,
+which `daypub` will use as its first argument. The command is
+
+    daypub <markdown|hugo> <zip-file> <output-directory>
+
+The output directory will be created if necessary. If you want to
+output files to the current directory, specify `.`.
+
 ### method 1: markdown
 
 This makes an `index.md` file, with image links adjusted to the
